@@ -1,0 +1,173 @@
+.chats {
+  /* width: min(100%, var(--content-max)); */
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(18px, 3vw, 32px);
+  scroll-behavior: smooth;
+}
+
+.emptyChats {
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.emptyState {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 24px;
+}
+
+.emptyIcon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--accent-muted);
+  color: var(--accent-secondary);
+  font-size: 1.35rem;
+}
+
+.emptyState h1 {
+  color: var(--text-primary);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.emptyState p {
+  color: var(--text-secondary);
+  font-size: clamp(0.98rem, 2vw, 1.08rem);
+  line-height: 1.6;
+}
+
+.userDiv,
+.gptDiv {
+  animation: messageIn 220ms ease;
+}
+
+.userDiv {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.userMessage {
+  max-width: min(76%, 680px);
+  width: fit-content;
+  padding: 13px 16px;
+  border-radius: 18px 18px 5px 18px;
+ 
+  background: rgba(56, 63, 78, 0.82);
+    color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  box-shadow: 0 14px 30px rgba(32, 201, 151, 0.14);
+}
+
+.gptDiv {
+  /* max-width: min(88%, 760px); */
+  align-self: flex-start;
+  max-width: 60%;
+  padding: 12px 18px;
+  /* border: 1px solid var(--border-color); */
+  border-radius: 18px 18px 18px 5px;
+  background: rgba(41, 47, 59, 0.82);
+  color: var(--text-primary);
+  font-size: 1rem; 
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  /* box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18); */
+}
+
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gptDiv p,
+.gptDiv ul,
+.gptDiv ol {
+  margin-bottom: 0.75rem;
+}
+
+.gptDiv p:last-child,
+.gptDiv ul:last-child,
+.gptDiv ol:last-child {
+  margin-bottom: 0;
+}
+
+.gptDiv ul,
+.gptDiv ol {
+  padding-left: 1.25rem;
+}
+
+.gptDiv a {
+  color: var(--accent-secondary);
+}
+
+.gptDiv code {
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.12rem 0.32rem;
+  font-size: 0.92em;
+}
+
+.gptDiv pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 0.9rem 0;
+}
+
+.gptDiv pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.hljs {
+  border: 1px solid var(--border-color);
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  background: #0b1118 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.55;
+}
+
+@media (max-width: 640px) {
+  .chats {
+    gap: 14px;
+    padding: 16px 10px 18px;
+  }
+
+  .emptyState {
+    padding-inline: 14px;
+  }
+
+  .userMessage,
+  .gptDiv {
+    max-width: 92%;
+    font-size: 0.96rem;
+  }
+
+  .gptDiv {
+    padding: 14px 15px;
+  }
+}
