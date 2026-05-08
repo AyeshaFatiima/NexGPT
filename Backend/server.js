@@ -4,6 +4,8 @@ import express from 'express';
 import mongoose from "mongoose";
 import dns from "dns";
 import chatRoutes from "./routes/chat.js";
+import authRoutes from "./routes/auth.js";
+import auth from "./middleware/auth.js";
 
 dotenv.config(); 
 
@@ -13,12 +15,22 @@ dns.setServers(['8.8.8.8', '8.8.4.4']);
 const app = express();
 const PORT = 8080;
 
+// 1. Middlewares (Sabse upar hone chahiye)
 app.use(express.json());
-app.use(cors());
+app.use(cors()); 
 
-// Routes
+// 2. Auth Routes (Signup aur Login ke liye koi token nahi chahiye)
+app.use("/api/auth", authRoutes);
+
+// 3. Protected Route (Testing ke liye - Isko chatRoutes se upar rakha hai)
+app.get("/api/history", auth, (req, res) => {
+    res.json({ message: "This is protected data", user: req.user });
+});
+
+// 4. Chat Routes
 app.use("/api", chatRoutes);
 
+// 5. External API Test Route (OpenRouter)
 app.post("/test", async (req, res) => {
     const options = {
         method: "POST",
@@ -57,7 +69,7 @@ app.post("/test", async (req, res) => {
     }
 });
 
-// Database Connection
+// 6. Database Connection
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGODB_URI); 
@@ -67,6 +79,7 @@ const connectDB = async () => {
     }    
 }
 
+// 7. Server Initialization
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     connectDB();

@@ -1,11 +1,12 @@
 import express from "express";
 import Thread from "../models/Thread.js"; 
 import getOpenAPIResponse from "../utils/openai.js";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
 // Test Route
-router.post("/test", async (req, res) => {
+router.post("/test", auth, async (req, res) => {
     try {
         const thread = new Thread({
             threadId: "xyz",
@@ -20,7 +21,7 @@ router.post("/test", async (req, res) => {
 });
 
 // Create New Thread
-router.post("/thread", async(req, res) => {
+router.post("/thread", auth, async(req, res) => {
     try {
         const { threadId, title } = req.body;
         let newThread = new Thread({
@@ -36,7 +37,7 @@ router.post("/thread", async(req, res) => {
 });
 
 // Get All Threads
-router.get("/threads", async (req, res) => {
+router.get("/threads", auth, async (req, res) => {
     try {
         let threads = await Thread.find({}).sort({ updatedAt: -1 });
         res.json(threads);
@@ -46,7 +47,7 @@ router.get("/threads", async (req, res) => {
 });
 
 // Get Single Thread by ID
-router.get("/thread/:threadid", async (req, res) => {
+router.get("/thread/:threadid", auth, async (req, res) => {
     try {
         const thread = await Thread.findOne({ threadId: req.params.threadid });
         if (!thread) {
@@ -59,7 +60,7 @@ router.get("/thread/:threadid", async (req, res) => {
 });
 
 // Delete Thread
-router.delete("/thread/:threadid", async (req, res) => {
+router.delete("/thread/:threadid", auth, async (req, res) => {
     try {
         const deletedThread = await Thread.findOneAndDelete({ threadId: req.params.threadid });
         if (!deletedThread) {
@@ -72,8 +73,8 @@ router.delete("/thread/:threadid", async (req, res) => {
 });
 
 // Main Chat Route
-router.post("/chat", async (req, res) => {
-    const { threadId, message } = req.body;
+router.post("/chat", auth, async (req, res) => {
+    const { threadId, message } = req.body; 
 
     // 1. Validation check
     if (!threadId || !message) {
