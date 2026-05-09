@@ -3,34 +3,49 @@ import Chat from "./Chat.jsx";
 import { MyContext } from "./MyContext.jsx";
 import { useContext, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "./toastStore.js";
 
 function ChatWindow() {
-  const { prompt, setPrompt, setReply, currThreadId, setPrevChats, setNewChat, setIsSidebarOpen, setAllThreads } = useContext(MyContext);
+  const { 
+    prompt, setPrompt, 
+    setReply, currThreadId, 
+    setPrevChats, setNewChat, 
+    setIsSidebarOpen, setAllThreads 
+  } = useContext(MyContext);
+
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   
-  // Dropdown ke bahar click detect karne ke liye ref
   const menuRef = useRef(null);
+  const chatEndRef = useRef(null); // Scroll ke liye ref
 
-  // Logout function
-  const handleLogout = useCallback(() => {
+  // 1. Auto-scroll function
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Jab bhi loading state change ho, niche scroll karein
+  useEffect(() => {
+    scrollToBottom();
+  }, [loading]);
+
+  const handleLogout = useCallback((showToast = true) => {
     localStorage.removeItem("token");
+    if (showToast) {
+      toast.success("Logged out successfully");
+    }
     navigate("/login");
   }, [navigate]);
 
-  // Outside click handler logic
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const getReply = async () => {
@@ -40,7 +55,8 @@ function ChatWindow() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      handleLogout();
+      toast.error("Session expired. Please login again.");
+      handleLogout(false);
       return;
     }
 
@@ -48,6 +64,7 @@ function ChatWindow() {
     setLoading(true);
     setNewChat(false);
     
+    // User message turant UI mein dikhane ke liye
     setPrevChats(prevChats => [
       ...prevChats,
       { role: "user", content: currentPrompt }
@@ -70,8 +87,9 @@ function ChatWindow() {
       const res = await response.json();
 
       if (response.status === 401) {
+        toast.error("Unauthorized access");
         setPrevChats(prevChats => prevChats.slice(0, -1));
-        handleLogout();
+        handleLogout(false);
         return;
       }
 
@@ -79,12 +97,14 @@ function ChatWindow() {
         throw new Error(res.error || res.message || "Failed to get reply");
       }
 
+      // Assistant message add karna
       setReply(res.reply);
       setPrevChats(prevChats => [
         ...prevChats,
         { role: "assistant", content: res.reply }
       ]);
 
+      // Sidebar mein thread update karna
       setAllThreads(prevThreads => {
         if (prevThreads.some(thread => thread.threadId === currThreadId)) {
           return prevThreads;
@@ -94,9 +114,10 @@ function ChatWindow() {
       });
 
     } catch (err) {
-      console.log("Chat Error:", err);
+      console.error("Chat Error:", err);
+      // Agar error aaye toh user ka message remove kar sakte hain ya error dikha sakte hain
       setPrevChats(prevChats => prevChats.slice(0, -1));
-      alert(err.message || "Message could not be sent. Please try again.");
+      toast.error(err.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -114,7 +135,6 @@ function ChatWindow() {
               <span>NexGPT <i className="fa-solid fa-chevron-down"></i></span>
           </div>
 
-          {/* User Icon aur Dropdown Wrapper */}
           <div className="userMenuWrapper" ref={menuRef} style={{ position: "relative" }}>
               <div className="userIconDiv" onClick={handleProfileClick}>
                   <span className="userIcon"><i className="fa-solid fa-user"></i></span>
@@ -134,15 +154,22 @@ function ChatWindow() {
 
       <main className="chatBody">
           <Chat loading={loading} />
-          {loading && <div className="typing-dots"><span>.</span><span>.</span><span>.</span></div>}
+          {loading && (
+            <div className="typing-dots">
+              <span>.</span><span>.</span><span>.</span>
+            </div>
+          )}
+          {/* Scroll Target */}
+          <div ref={chatEndRef} />
       </main>
 
       <div className="chatInput">
           <div className="inputBox">
               <textarea 
-                placeholder="Ask anything"
+                placeholder={loading ? "Thinking..." : "Ask anything"}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
+                disabled={loading}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom"; 
 import "./Signup.css"; 
+import toast from "../toastStore.js";
 
 const Signup = () => {
     const [email, setEmail] = useState("");
@@ -33,13 +34,14 @@ const Signup = () => {
             // Sabse important step: Token ko save karna
             if (data.token) {
                 localStorage.setItem("token", data.token);
+                toast.success('Account created successfully! Welcome, ' + username + '!'); // Success Message
             }
             
             console.log("Signup Success", data);
-            navigate("/chat");
+            navigate("/chat");      
         } catch (err) {
             console.log("Error:", err);
-            alert(err.message || "Signup failed. Try again.");
+            toast.error(err.message || 'Signup Failed. Please try again.');
         }
     }
 

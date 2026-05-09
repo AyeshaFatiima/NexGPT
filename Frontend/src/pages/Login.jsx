@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom"; 
 import "./Login.css"; 
+import toast from "../toastStore.js";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -34,7 +35,8 @@ const Login = () => {
             
             // Check karein ki aapka backend 'token' naam se hi bhej raha hai na?
             if(data.token) {
-                localStorage.setItem("token", data.token); 
+                localStorage.setItem("token", data.token);
+                toast.success('k, Ayesha! Login Successful.'); // Success Message
             }
             
             navigate("/chat");
@@ -42,7 +44,7 @@ const Login = () => {
         } catch (err) {
             console.log("Error Details:", err);
             // Agar backend se message aa raha hai toh wahi dikhao
-            alert(err.message || "Invalid Email or Password");
+           toast.error(err.message || 'Login Failed. Please check your credentials.');
         }
     }
 

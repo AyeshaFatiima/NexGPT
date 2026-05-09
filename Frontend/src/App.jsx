@@ -5,6 +5,7 @@ import ChatWindow from './ChatWindow.jsx';
 import { MyContext } from './MyContext.jsx';
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
+import ToastContainer from "./ToastContainer.jsx";
 // import Welcome from "./pages/Welcome.jsx"; // Welcome page import karein
 import "./App.css";
 import { v1 as uuidv1 } from "uuid";
@@ -56,6 +57,7 @@ function App() {
   return (
     <MyContext.Provider value={providerValue}>
       <Router>
+        <ToastContainer />
         <Routes>
           {/* Landing/Welcome Page */}
           <Route path="/" element={<Login />} />

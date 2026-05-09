@@ -9,3 +9,34 @@
     radial-gradient(circle at 88% 8%, rgba(56, 189, 248, 0.16), transparent 30%),
     linear-gradient(135deg, #0c0f14 0%, #11161f 52%, #0c0f14 100%);
 }
+
+.toastContainer {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toastItem {
+  max-width: min(360px, calc(100vw - 36px));
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: #f8fafc;
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.toastItem.success {
+  border-left: 4px solid #22c55e;
+}
+
+.toastItem.error {
+  border-left: 4px solid #ef4444;
+}
