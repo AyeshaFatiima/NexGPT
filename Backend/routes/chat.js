@@ -5,109 +5,127 @@ import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Test Route
-router.post("/test", auth, async (req, res) => {
+const getAuthenticatedUserId = (req) => {
+    return req.user?.id || req.user?._id || req.user?.userId || req.user?.sub;
+};
+
+// Main Chat Route
+router.post("/chat", auth, async (req, res) => {
+    const { threadId, message } = req.body; 
+
+    // 1. Basic Validation
+    if (!threadId || !message) {
+        return res.status(400).json({ message: "Invalid request body" });
+    }
+
     try {
-        const thread = new Thread({
-            threadId: "xyz",
-            title: "Testing New Thread"
+        // 2. Token se User ID nikalna (Payload check)
+        // JWT sign karte waqt jo key use ki thi (id ya _id), wahi yahan milegi
+        const userId = getAuthenticatedUserId(req);
+
+        if (!userId) {
+            console.error("Auth Error: User ID missing in req.user", req.user);
+            return res.status(401).json({ message: "Unauthorized: User ID missing" });
+        }
+
+        // 3. Find thread only if it belongs to THIS logged-in user
+        let thread = await Thread.findOne({ threadId: threadId, user: userId });
+
+        if (!thread) {
+            // Naya thread banate waqt 'user' field dena compulsory hai
+            thread = new Thread({
+                user: userId, 
+                threadId,
+                title: message.length > 30 ? message.substring(0, 30) + "..." : message,
+                messages: [{ role: "user", content: message }]
+            });
+        } else {
+            // Purane thread mein naya message push karna
+            thread.messages.push({ role: "user", content: message });
+        }
+
+        // 4. Get AI Response
+        const assistantReply = await getOpenAPIResponse(message);
+
+        // 5. Update thread with AI response and timestamp
+        thread.messages.push({ role: "assistant", content: assistantReply });
+        thread.updatedAt = Date.now();
+
+        // 6. Final Save
+        await thread.save();
+        res.json({ reply: assistantReply });
+
+    } catch (err) {
+        // Console mein error print hogi taaki aap check kar sako exactly kya fata
+        console.error("Chat Backend Error Details:", err);
+        res.status(500).json({ 
+            message: "Failed to process chat", 
+            error: err.message 
         });
-        const response = await thread.save();
-        res.status(201).send(response);
-    } catch(err) {
-        console.error(err);
-        res.status(500).json({ message: "Failed to create thread", error: err.message });
     }
 });
 
-// Create New Thread
-router.post("/thread", auth, async(req, res) => {
-    try {
-        const { threadId, title } = req.body;
-        let newThread = new Thread({
-            threadId,
-            title
-        });
-        let response = await newThread.save();
-        res.status(201).json(response);
-    } catch(err) {
-        console.error("Error creating thread:", err);
-        res.status(500).json({ message: "Failed to create thread", error: err.message });
-    }
-});
-
-// Get All Threads
+// Get All Threads (Sirf logged-in user ke threads fetch karne ke liye)
 router.get("/threads", auth, async (req, res) => {
     try {
-        let threads = await Thread.find({}).sort({ updatedAt: -1 });
+        const userId = getAuthenticatedUserId(req);
+
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized: User ID missing" });
+        }
+
+        let threads = await Thread.find({ user: userId }).sort({ updatedAt: -1 });
         res.json(threads);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Get Single Thread by ID
+// Get Single Thread by ID for logged-in user
 router.get("/thread/:threadid", auth, async (req, res) => {
     try {
-        const thread = await Thread.findOne({ threadId: req.params.threadid });
+        const userId = getAuthenticatedUserId(req);
+
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized: User ID missing" });
+        }
+
+        const thread = await Thread.findOne({
+            threadId: req.params.threadid,
+            user: userId
+        });
+
         if (!thread) {
             return res.status(404).json({ message: "Thread not found" });
         }
-        res.json(thread); 
+
+        res.json(thread);
     } catch (err) {
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ message: "Failed to fetch thread", error: err.message });
     }
 });
 
-// Delete Thread
+// Delete Thread by ID for logged-in user
 router.delete("/thread/:threadid", auth, async (req, res) => {
     try {
-        const deletedThread = await Thread.findOneAndDelete({ threadId: req.params.threadid });
+        const userId = getAuthenticatedUserId(req);
+
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized: User ID missing" });
+        }
+
+        const deletedThread = await Thread.findOneAndDelete({
+            threadId: req.params.threadid,
+            user: userId
+        });
+
         if (!deletedThread) {
             return res.status(404).json({ message: "Thread not found" });
         }
+
         res.json({ message: "Thread deleted successfully" });
-    } catch(err) {
-        res.status(500).json({ error: "Failed to delete thread" });
-    }
-});
-
-// Main Chat Route
-router.post("/chat", auth, async (req, res) => {
-    const { threadId, message } = req.body; 
-
-    // 1. Validation check
-    if (!threadId || !message) {
-        return res.status(400).json({ message: "Invalid request body" });
-    }
-
-    try {
-        // 2. Find or Create thread (let used to allow reassignment)
-        let thread = await Thread.findOne({ threadId: threadId });
-
-        if (!thread) {
-            thread = new Thread({
-                threadId,
-                title: message.length > 30 ? message.substring(0, 30) + "..." : message,
-                messages: [{ role: "user", content: message }]
-            });
-        } else {
-            thread.messages.push({ role: "user", content: message });
-        }
-
-        // 3. Get AI Response
-        const assistantReply = await getOpenAPIResponse(message);
-
-        // 4. Update thread with AI response and timestamp
-        thread.messages.push({ role: "assistant", content: assistantReply });
-        thread.updatedAt = Date.now();
-
-        await thread.save();
-        res.json({ reply: assistantReply });
-
     } catch (err) {
-        console.error("Chat Error:", err);
-        res.status(500).json({ error: "Failed to process chat" });
+        res.status(500).json({ message: "Failed to delete thread", error: err.message });
     }
 });
 

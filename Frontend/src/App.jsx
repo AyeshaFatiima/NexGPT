@@ -1,28 +1,33 @@
-import React, { useEffect, useState } from "react";
-// 1. BrowserRouter ko as Router import kiya
+import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import ChatWindow from './ChatWindow.jsx';
 import { MyContext } from './MyContext.jsx';
 import Signup from "./pages/Signup.jsx";
-// 2. Login import kiya (Agar file nahi hai toh niche wala temporary component chalega)
+import Login from "./pages/Login.jsx";
+// import Welcome from "./pages/Welcome.jsx"; // Welcome page import karein
 import "./App.css";
 import { v1 as uuidv1 } from "uuid";
 
-// Temporary Login component taaki error na aaye jab tak aap Login.jsx na bana lo
-const Login = () => (
-  <div style={{ 
-    height: "100vh", 
-    display: "flex", 
-    justifyContent: "center", 
-    alignItems: "center", 
-    color: "white", 
-    background: "#1a1a1a" 
-  }}>
-    <h1>Login Page (Under Construction)</h1>
-    <p style={{marginLeft: '10px'}}>Go to <a href="/signup" style={{color: '#ff4b2b'}}>Signup</a></p>
-  </div>
-);
+// 1. Protected Route: Agar token nahi hai toh Login bhej do
+const ChatPage = () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return (
+    <div className="main">
+      <Sidebar />
+      <ChatWindow />
+    </div>
+  );
+};
+
+// 2. Public Route Helper: Agar token HAI toh seedha Chat bhej do (Login/Signup nahi dikhana)
+const PublicRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? <Navigate to="/chat" replace /> : children;
+};
 
 function App() {
   const [prompt, setPrompt] = useState("");
@@ -48,28 +53,21 @@ function App() {
     isSidebarOpen, setIsSidebarOpen
   };
 
-  // Chat Page Component
-  const ChatPage = () => (
-    <div className="main">
-      <Sidebar />
-      <ChatWindow />
-    </div>
-  );
-
   return (
     <MyContext.Provider value={providerValue}>
       <Router>
         <Routes>
-          {/* Default Route: Login */}
+          {/* Landing/Welcome Page */}
           <Route path="/" element={<Login />} />
+
+          {/* Login & Signup (Public only) */}
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
           
-          {/* Signup Route */}
-          <Route path="/signup" element={<Signup />} />
-          
-          {/* Chat Route (Protected logic baad mein add karenge) */}
+          {/* Chat (Protected only) */}
           <Route path="/chat" element={<ChatPage />} />
           
-          {/* Catch-all: Redirect to Login */}
+          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

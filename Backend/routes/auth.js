@@ -13,7 +13,12 @@ router.post('/signup',async(req,res)=>{
         }
         const newUser=new User({username,email,password});
         await newUser.save();
-        res.status(201).json({message:"User created successfully"});
+        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        res.status(201).json({
+            message:"User created successfully",
+            token,
+            user: { id: newUser._id, username: newUser.username, email: newUser.email }
+        });
     }catch(err){
         console.log(err);
         res.status(500).json({message: "Error details", error: err.message});
@@ -33,11 +38,11 @@ router.post('/login',async(req,res)=>{
         } 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
         // user bhejte waqt password exclude kar dein
-res.status(200).json({ 
-    message: "Login successful", 
-    token, 
-    user: { id: user._id, username: user.username, email: user.email } 
-});
+        res.status(200).json({
+            message: "Login successful",
+            token,
+            user: { id: user._id, username: user.username, email: user.email }
+        });
     }catch(err){
         console.log(err);
         res.status(500).json({message: "Error details", error: err.message});

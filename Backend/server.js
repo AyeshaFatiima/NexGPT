@@ -13,21 +13,21 @@ dotenv.config();
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080; // Local port fallback
 
-// 1. Middlewares (Sabse upar hone chahiye)
+// 1. Middlewares
 app.use(express.json());
 app.use(cors()); 
 
-// 2. Auth Routes (Signup aur Login ke liye koi token nahi chahiye)
+// 2. Auth Routes (Public)
 app.use("/api/auth", authRoutes);
 
-// 3. Protected Route (Testing ke liye - Isko chatRoutes se upar rakha hai)
+// 3. Protected Test Route
 app.get("/api/history", auth, (req, res) => {
     res.json({ message: "This is protected data", user: req.user });
 });
 
-// 4. Chat Routes
+// 4. Chat Routes (Private/Protected)
 app.use("/api", chatRoutes);
 
 // 5. External API Test Route (OpenRouter)
@@ -69,18 +69,21 @@ app.post("/test", async (req, res) => {
     }
 });
 
-// 6. Database Connection
-const connectDB = async () => {
+// 6. Database & Server Initialization Logic
+const startServer = async () => {
     try {
+        // Pehle DB connect karein
         await mongoose.connect(process.env.MONGODB_URI); 
         console.log("MongoDB Connected Successfully");
+
+        // Connection success ke baad server start karein
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
     } catch (error) {
         console.error("MongoDB Connection Error:", error.message);
-    }    
+        process.exit(1); // Agar DB connect na ho toh server band kar dein
+    }     
 }
 
-// 7. Server Initialization
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    connectDB();
-});
+startServer();

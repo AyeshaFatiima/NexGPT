@@ -2,26 +2,47 @@ import "./Sidebar.css";
 import {useCallback, useContext, useEffect} from "react";
 import {MyContext} from "./MyContext.jsx";
 import {v1 as uuidv1} from "uuid";
+import {useNavigate} from "react-router-dom";
 
 function Sidebar(){
 const {allThreads, setAllThreads, currThreadId, setNewChat, setPrompt, setReply, setCurrThreadId, setPrevChats, isSidebarOpen, setIsSidebarOpen}=useContext(MyContext)
+const navigate = useNavigate();
+
+const handleUnauthorized = useCallback(() => {
+  localStorage.removeItem("token");
+  navigate("/login");
+}, [navigate]);
 
 const getAllThreads=useCallback(async()=>{
   try{
-    const response=await fetch("http://localhost:8080/api/threads");
+    const token = localStorage.getItem("token");
+    const response=await fetch("http://localhost:8080/api/threads", {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
     const res=await response.json();
-    const filteredData=res.map(thread => ({threadId: thread.threadId, title: thread.title}));
+    if(response.status === 401 || res.error === "jwt expired"){
+      handleUnauthorized();
+      return;
+    }
+    if(!response.ok){
+      console.error("API error:", res);
+      return;
+    }
+    const filteredData=Array.isArray(res) ? res.map(thread => ({threadId: thread.threadId, title: thread.title})) : [];
     setAllThreads(filteredData);
     console.log(filteredData);
   }
-  catch(error){
+  catch(error){ 
     console.log(error);
   }
-}, [setAllThreads]);
+}, [handleUnauthorized, setAllThreads]);
 
 useEffect(()=>{
   getAllThreads();
-},[currThreadId, getAllThreads]) 
+},[getAllThreads])
 
 const createNewChat=()=>{
   setNewChat(true);
@@ -37,8 +58,22 @@ const changeThread=async(threadId)=>{
   setIsSidebarOpen(false);
 
   try{
-    const response=await fetch(`http://localhost:8080/api/thread/${threadId}`);
+    const token = localStorage.getItem("token");
+    const response=await fetch(`http://localhost:8080/api/thread/${threadId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
     const res=await response.json();
+    if(response.status === 401 || res.error === "jwt expired"){
+      handleUnauthorized();
+      return;
+    }
+    if(!response.ok){
+      console.error("API error:", res);
+      return;
+    }
     console.log(res);
     setPrevChats(res.messages || []);
     setNewChat(false);
@@ -50,8 +85,23 @@ const changeThread=async(threadId)=>{
 
 const deleteThread=async(threadId)=>{
 try{
-  const response=await fetch(`http://localhost:8080/api/thread/${threadId}`,{method:"DELETE"})
+  const token = localStorage.getItem("token");
+  const response=await fetch(`http://localhost:8080/api/thread/${threadId}`,{
+    method:"DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
   const res=await response.json();
+  if(response.status === 401 || res.error === "jwt expired"){
+    handleUnauthorized();
+    return;
+  }
+  if(!response.ok){
+    console.error("API error:", res);
+    return;
+  }
   console.log(res);
   setAllThreads(prev=>prev.filter(thread=>thread.threadId!==threadId));
   if(threadId===currThreadId){
@@ -70,10 +120,9 @@ try{
             aria-hidden="true"
         />
 
-        {/* Responsive navigation drawer with shared desktop/mobile behavior. */}
         <section className={`sidebar ${isSidebarOpen ? "open" : ""}`} aria-label="Chat history">
             <div className="sidebarHeader">
-                <div className="brandMark" aria-hidden="true"><img src="public/gpt.png" alt="NexGPT Logo" className="brandLogo" /></div>
+                <div className="brandMark" aria-hidden="true"><img src="/gpt.png" alt="NexGPT Logo" className="brandLogo" /></div>
                 <div>
                     <p className="brandName">NexGPT</p>
                     <span className="brandMeta">AI workspace</span>

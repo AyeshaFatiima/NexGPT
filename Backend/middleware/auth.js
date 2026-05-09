@@ -1,29 +1,33 @@
 import jwt from "jsonwebtoken";
 
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
     try {
-        // 1. Pehle poora header nikaalein
+        // 1. Header se token nikalna
         const authHeader = req.headers.authorization;
-        
-        // 2. "Bearer" aur "Token" ko alag karein
-        // split(" ") karne se ["Bearer", "eyJhbG..."] ban jayega, hum [1] index uthayenge
         const token = authHeader && authHeader.split(" ")[1];
-
-        console.log("Token being verified:", token); 
-        console.log("Secret used:", process.env.JWT_SECRET);
 
         if (!token) {
             return res.status(401).json({ message: "No token, authorization denied" });
         }
 
-        // 3. Ab sirf clean token verify hoga
+        // 2. Token verify karna
         const verified = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = verified;
+
+        const userId = verified.id || verified._id || verified.userId || verified.sub;
+
+        if (!userId) {
+            return res.status(401).json({ message: "Invalid token payload: user id missing" });
+        }
+
+        req.user = { ...verified, id: userId };
         next();
         
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Error details", error: err.message });
+        console.error("Auth Middleware Error:", err.message);
+        res.status(401).json({ 
+            message: "Invalid or expired token", 
+            error: err.message 
+        });
     }
 };
 
