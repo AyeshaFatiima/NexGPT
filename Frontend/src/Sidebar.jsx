@@ -16,7 +16,7 @@ const handleUnauthorized = useCallback(() => {
 const getAllThreads=useCallback(async()=>{
   try{
     const token = localStorage.getItem("token");
-    const response=await fetch("http://localhost:8080/api/threads", {
+    const response=await fetch("https://nexgpt.onrender.com/api/threads", {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
