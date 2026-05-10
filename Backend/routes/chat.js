@@ -9,18 +9,14 @@ const getAuthenticatedUserId = (req) => {
     return req.user?.id || req.user?._id || req.user?.userId || req.user?.sub;
 };
 
-// Main Chat Route
 router.post("/chat", auth, async (req, res) => {
     const { threadId, message } = req.body; 
 
-    // 1. Basic Validation
     if (!threadId || !message) {
         return res.status(400).json({ message: "Invalid request body" });
     }
 
     try {
-        // 2. Token se User ID nikalna (Payload check)
-        // JWT sign karte waqt jo key use ki thi (id ya _id), wahi yahan milegi
         const userId = getAuthenticatedUserId(req);
 
         if (!userId) {
@@ -28,11 +24,9 @@ router.post("/chat", auth, async (req, res) => {
             return res.status(401).json({ message: "Unauthorized: User ID missing" });
         }
 
-        // 3. Find thread only if it belongs to THIS logged-in user
         let thread = await Thread.findOne({ threadId: threadId, user: userId });
 
         if (!thread) {
-            // Naya thread banate waqt 'user' field dena compulsory hai
             thread = new Thread({
                 user: userId, 
                 threadId,
@@ -40,23 +34,18 @@ router.post("/chat", auth, async (req, res) => {
                 messages: [{ role: "user", content: message }]
             });
         } else {
-            // Purane thread mein naya message push karna
             thread.messages.push({ role: "user", content: message });
         }
 
-        // 4. Get AI Response
         const assistantReply = await getOpenAPIResponse(message);
 
-        // 5. Update thread with AI response and timestamp
         thread.messages.push({ role: "assistant", content: assistantReply });
         thread.updatedAt = Date.now();
 
-        // 6. Final Save
         await thread.save();
         res.json({ reply: assistantReply });
 
     } catch (err) {
-        // Console mein error print hogi taaki aap check kar sako exactly kya fata
         console.error("Chat Backend Error Details:", err);
         res.status(500).json({ 
             message: "Failed to process chat", 
@@ -65,7 +54,6 @@ router.post("/chat", auth, async (req, res) => {
     }
 });
 
-// Get All Threads (Sirf logged-in user ke threads fetch karne ke liye)
 router.get("/threads", auth, async (req, res) => {
     try {
         const userId = getAuthenticatedUserId(req);
@@ -81,7 +69,6 @@ router.get("/threads", auth, async (req, res) => {
     }
 });
 
-// Get Single Thread by ID for logged-in user
 router.get("/thread/:threadid", auth, async (req, res) => {
     try {
         const userId = getAuthenticatedUserId(req);
@@ -105,7 +92,6 @@ router.get("/thread/:threadid", auth, async (req, res) => {
     }
 });
 
-// Delete Thread by ID for logged-in user
 router.delete("/thread/:threadid", auth, async (req, res) => {
     try {
         const userId = getAuthenticatedUserId(req);

@@ -21,16 +21,14 @@ const UserSchema = new mongoose.Schema({
     },
 });
 
-// FIXED MIDDLEWARE: removed 'next' because we are using async/await
 UserSchema.pre("save", async function () {
-    // Agar password change nahi hua toh kuch mat karo
     if (!this.isModified("password")) return;
 
     try {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
     } catch (error) {
-        throw error; // Async mein error throw karna kafi hai
+        throw error; 
     }
 });
 

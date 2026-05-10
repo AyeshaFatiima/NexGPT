@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 
 const auth = async (req, res, next) => {
     try {
-        // 1. Header se token nikalna
         const authHeader = req.headers.authorization;
         const token = authHeader && authHeader.split(" ")[1];
 
@@ -10,7 +9,6 @@ const auth = async (req, res, next) => {
             return res.status(401).json({ message: "No token, authorization denied" });
         }
 
-        // 2. Token verify karna
         const verified = jwt.verify(token, process.env.JWT_SECRET);
 
         const userId = verified.id || verified._id || verified.userId || verified.sub;

@@ -17,10 +17,9 @@ const MessageSchema = new mongoose.Schema({
 });
 
 const ThreadSchema = new mongoose.Schema({
-    // Sabse important change: User se link karna
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Ye aapke User model ka naam hona chahiye
+        ref: "User", 
         required: true
     },
     threadId: {

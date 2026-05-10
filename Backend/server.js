@@ -9,28 +9,22 @@ import auth from "./middleware/auth.js";
 
 dotenv.config(); 
 
-// Fix for MongoDB DNS resolution error
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const app = express();
-const PORT = process.env.PORT || 8080; // Local port fallback
+const PORT = process.env.PORT || 8080; 
 
-// 1. Middlewares
 app.use(express.json());
 app.use(cors()); 
 
-// 2. Auth Routes (Public)
 app.use("/api/auth", authRoutes);
 
-// 3. Protected Test Route
 app.get("/api/history", auth, (req, res) => {
     res.json({ message: "This is protected data", user: req.user });
 });
 
-// 4. Chat Routes (Private/Protected)
 app.use("/api", chatRoutes);
 
-// 5. External API Test Route (OpenRouter)
 app.post("/test", async (req, res) => {
     const options = {
         method: "POST",
@@ -69,20 +63,17 @@ app.post("/test", async (req, res) => {
     }
 });
 
-// 6. Database & Server Initialization Logic
 const startServer = async () => {
     try {
-        // Pehle DB connect karein
         await mongoose.connect(process.env.MONGODB_URI); 
         console.log("MongoDB Connected Successfully");
 
-        // Connection success ke baad server start karein
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
     } catch (error) {
         console.error("MongoDB Connection Error:", error.message);
-        process.exit(1); // Agar DB connect na ho toh server band kar dein
+        process.exit(1); 
     }     
 }
 
