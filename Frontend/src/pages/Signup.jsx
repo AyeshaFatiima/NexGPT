@@ -48,7 +48,7 @@ const Signup = () => {
     return (
         <div className="signup-container">
             <div className="signup-card">
-                <h2>Create Account</h2>
+                <h2>Welcome to NexGPT!</h2>
                 {/* Form tag add kiya hai taaki Enter key se submit ho sake */}
                 <form onSubmit={submitHandler} style={{width: '100%', display: 'flex', flexDirection: 'column', gap: '15px'}}>
                     <input 

@@ -36,7 +36,7 @@ const Login = () => {
             // Check karein ki aapka backend 'token' naam se hi bhej raha hai na?
             if(data.token) {
                 localStorage.setItem("token", data.token);
-                toast.success('k, Ayesha! Login Successful.'); // Success Message
+                toast.success('Welcome back, Login Successful.'); // Success Message
             }
             
             navigate("/chat");
@@ -51,7 +51,7 @@ const Login = () => {
     return (
         <div className="signup-container">
             <div className="signup-card">
-                <h2>Login</h2>
+                <h2>Welcome Back!</h2>
                 <form onSubmit={submitHandler} style={{width: '100%', display: 'flex', flexDirection: 'column', gap: '15px'}}>
                     <input 
                         type="email" 
