@@ -30,11 +30,9 @@ const Signup = () => {
             if (!res.ok) {
                 throw data;
             }
-            
-            // Sabse important step: Token ko save karna
             if (data.token) {
                 localStorage.setItem("token", data.token);
-                toast.success('Account created successfully! Welcome, ' + username + '!'); // Success Message
+                toast.success('Account created successfully! Welcome, ' + username + '!');
             }
             
             console.log("Signup Success", data);
@@ -49,7 +47,6 @@ const Signup = () => {
         <div className="signup-container">
             <div className="signup-card">
                 <h2>Welcome to NexGPT!</h2>
-                {/* Form tag add kiya hai taaki Enter key se submit ho sake */}
                 <form onSubmit={submitHandler} style={{width: '100%', display: 'flex', flexDirection: 'column', gap: '15px'}}>
                     <input 
                         type="text" 

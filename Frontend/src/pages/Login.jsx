@@ -25,25 +25,20 @@ const Login = () => {
             
             const data = await res.json();
             
-            // 1. Pehle check karo ki response sahi hai ya nahi
             if (!res.ok) {
-                throw data; // Agar error hai toh catch block mein bhej do
+                throw data; 
             }
-
-            // 2. Agar Response OK hai, tabhi token save karo aur navigate karo
             console.log("Login Success", data);
             
-            // Check karein ki aapka backend 'token' naam se hi bhej raha hai na?
             if(data.token) {
                 localStorage.setItem("token", data.token);
-                toast.success('Welcome back, Login Successful.'); // Success Message
+                toast.success('Welcome back, Login Successful.');
             }
             
             navigate("/chat");
             
         } catch (err) {
             console.log("Error Details:", err);
-            // Agar backend se message aa raha hai toh wahi dikhao
            toast.error(err.message || 'Login Failed. Please check your credentials.');
         }
     }

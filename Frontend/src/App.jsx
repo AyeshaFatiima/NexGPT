@@ -6,11 +6,9 @@ import { MyContext } from './MyContext.jsx';
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import ToastContainer from "./ToastContainer.jsx";
-// import Welcome from "./pages/Welcome.jsx"; // Welcome page import karein
 import "./App.css";
 import { v1 as uuidv1 } from "uuid";
 
-// 1. Protected Route: Agar token nahi hai toh Login bhej do
 const ChatPage = () => {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -24,7 +22,6 @@ const ChatPage = () => {
   );
 };
 
-// 2. Public Route Helper: Agar token HAI toh seedha Chat bhej do (Login/Signup nahi dikhana)
 const PublicRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? <Navigate to="/chat" replace /> : children;
@@ -59,17 +56,10 @@ function App() {
       <Router>
         <ToastContainer />
         <Routes>
-          {/* Landing/Welcome Page */}
           <Route path="/" element={<Login />} />
-
-          {/* Login & Signup (Public only) */}
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
-          
-          {/* Chat (Protected only) */}
           <Route path="/chat" element={<ChatPage />} />
-          
-          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

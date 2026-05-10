@@ -5,8 +5,6 @@
   flex-direction: column;
   gap: 20px;
   padding: 24px clamp(12px, 5vw, 40px);
-  
-  /* Ye lines ensure karengi ki content hamesha top se start ho */
   justify-content: flex-start !important; 
   align-items: stretch;
   
@@ -19,9 +17,9 @@
 .emptyChats {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* Isse center se hat jayega */
+  justify-content: flex-start; 
   align-items: center;
-  padding-top: 50px; /* Thoda space dene ke liye center ki jagah padding use karein */
+  padding-top: 50px; 
 }
 
 .emptyState {
@@ -85,18 +83,15 @@
 }
 
 .gptDiv {
-  /* max-width: min(88%, 760px); */
   align-self: flex-start;
   max-width: 60%;
   padding: 12px 18px;
-  /* border: 1px solid var(--border-color); */
   border-radius: 18px 18px 18px 5px;
   background: rgba(41, 47, 59, 0.82);
   color: var(--text-primary);
   font-size: 1rem; 
   line-height: 1.65;
   overflow-wrap: anywhere;
-  /* box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18); */
 }
 
 @keyframes messageIn {

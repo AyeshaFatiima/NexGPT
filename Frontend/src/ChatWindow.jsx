@@ -18,14 +18,12 @@ function ChatWindow() {
   const navigate = useNavigate();
   
   const menuRef = useRef(null);
-  const chatEndRef = useRef(null); // Scroll ke liye ref
+  const chatEndRef = useRef(null);
 
-  // 1. Auto-scroll function
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Jab bhi loading state change ho, niche scroll karein
   useEffect(() => {
     scrollToBottom();
   }, [loading]);
@@ -64,7 +62,6 @@ function ChatWindow() {
     setLoading(true);
     setNewChat(false);
     
-    // User message turant UI mein dikhane ke liye
     setPrevChats(prevChats => [
       ...prevChats,
       { role: "user", content: currentPrompt }
@@ -97,14 +94,11 @@ function ChatWindow() {
         throw new Error(res.error || res.message || "Failed to get reply");
       }
 
-      // Assistant message add karna
       setReply(res.reply);
       setPrevChats(prevChats => [
         ...prevChats,
         { role: "assistant", content: res.reply }
       ]);
-
-      // Sidebar mein thread update karna
       setAllThreads(prevThreads => {
         if (prevThreads.some(thread => thread.threadId === currThreadId)) {
           return prevThreads;
@@ -115,7 +109,6 @@ function ChatWindow() {
 
     } catch (err) {
       console.error("Chat Error:", err);
-      // Agar error aaye toh user ka message remove kar sakte hain ya error dikha sakte hain
       setPrevChats(prevChats => prevChats.slice(0, -1));
       toast.error(err.message || "Something went wrong!");
     } finally {
@@ -159,7 +152,6 @@ function ChatWindow() {
               <span>.</span><span>.</span><span>.</span>
             </div>
           )}
-          {/* Scroll Target */}
           <div ref={chatEndRef} />
       </main>
 
