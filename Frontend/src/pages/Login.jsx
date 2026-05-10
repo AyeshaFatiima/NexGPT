@@ -15,7 +15,7 @@ const Login = () => {
         e.preventDefault();
         try {
             const userData = { email, password };
-            const res = await fetch("http://localhost:8080/api/auth/login", {
+            const res = await fetch("https://nexgpt.onrender.com/api/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
