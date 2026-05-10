@@ -59,7 +59,7 @@ const changeThread=async(threadId)=>{
 
   try{
     const token = localStorage.getItem("token");
-    const response=await fetch(`http://localhost:8080/api/thread/${threadId}`, {
+    const response=await fetch(`https://nexgpt.onrender.com/api/thread/${threadId}`, {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -86,7 +86,7 @@ const changeThread=async(threadId)=>{
 const deleteThread=async(threadId)=>{
 try{
   const token = localStorage.getItem("token");
-  const response=await fetch(`http://localhost:8080/api/thread/${threadId}`,{
+  const response=await fetch(`https://nexgpt.onrender.com/api/thread/${threadId}`,{
     method:"DELETE",
     headers: {
       "Authorization": `Bearer ${token}`,
